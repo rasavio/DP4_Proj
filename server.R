@@ -1,39 +1,48 @@
 #
-# This is the server logic of a Shiny web application. You can run the 
+# This is the server logic of a Shiny web application. You can run the
 # application by clicking 'Run App' above.
 #
 # Find out more about building applications with Shiny here:
-# 
+#
 #    http://shiny.rstudio.com/
 #
 
+#
 library(shiny)
 library(tidyverse)
 library(tidyquant)
 library(ggplot2)
 library(plotly)
+library(readr)
+
+
+data <- read_rds("data.rds")
 
 # Define server logic required to design our shinyapp
 serverLogic <- function(input, output) {
-  
-  output$g <- renderPlot({
+  output$p <- renderPlotly({
+   
+    # Get data
+    stocks <-
+      c(input$stock1, input$stock2)
     
-    stock <- input$StockSymbol
-    
-    data <- FANG %>%
-      filter(symbol == stock)
-    
-    # draw the plot  
+        # Draw plot
     g <- data %>%
-      ggplot(aes(x = date, y = adjusted, color = symbol)) +
-      geom_line(size = 1) +
-      labs(title = str_glue("Daily Stock Prices: {stock}"),
-           x = "", y = "Adjusted Prices", color = "") +
-      scale_y_continuous(labels = scales::dollar) +
-      theme_tq() + 
+      filter(symbol %in% stocks) %>%
+      ggplot(aes(x = date, y = Ra, color = symbol)) +
+      geom_line() +
+      facet_wrap(. ~ symbol, ncol = 1, scales = "free_y") +
+      theme_tq() +
+      labs(
+        title  = "",
+        x      = "",
+        y      = "",
+        color  = ""
+      
+      ) +
       scale_color_tq()
     
-    g
+    ggplotly(g) %>% layout(height = 400, width = 800)
     
   })
   
