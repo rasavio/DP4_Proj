@@ -16,33 +16,32 @@ library(plotly)
 
 
 # get stock symbols
-stock_symbols <- c("AMZN", "FB", "NFLX", "GOOGL")
+stock_symbols <- c("AAPL", "AMZN", "FB", "GOOG", "NFLX")
 
 # Define UI for application
 ui <- fluidPage(
-  titlePanel("Stock Market Returns: NYSE"),
-  
+  titlePanel("Forecasting FAANG Stock Prices"),
   
   # Sidebar with a slider input
   sidebarLayout(
     inputPanel(
-      selectInput("stock1",
-                  "Stock 1:",
+      selectInput("stock",
+                  "Select Stock:",
                   stock_symbols,
                   selected = stock_symbols[1],
                   ),
-      selectInput("stock2",
-                  "Stock 2:",
-                  stock_symbols,
-                  selected = stock_symbols[2],
+      numericInput("periods",
+                  "Number of Periods",
+                  value = 500,
+                  min = 1
       )
     ),
     # Show plot + instructions
     mainPanel("",
-      plotlyOutput("p"),
+      plotOutput("g"),
       "INSTRUCTIONS:
-      Use the drop-down menus to select two stocks from the FANG stocks group to review. FANG refers to the four prominent American Technology companies: Facebook, Amazon, Netflix, and Google.
-      The plot will update to show the period returns in a monthly periodicity using adjusted stock prices.
+      FAANG refers to the prominent American Technology companies: Facebook, Amazon, Apple, Netflix, and Google.
+      Select one of these stocks from the drop-down menu and a forecast of future closing prices will be generated.
       "
     )
   )

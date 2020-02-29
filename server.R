@@ -12,37 +12,30 @@ library(shiny)
 library(tidyverse)
 library(tidyquant)
 library(ggplot2)
-library(plotly)
 library(readr)
+library(tseries)
+library(forecast)
 
-
+# load data: "stock.prices" from = "2010-01-01")
 data <- read_rds("data.rds")
 
 # Define server logic required to design our shinyapp
 serverLogic <- function(input, output) {
-  output$p <- renderPlotly({
+  output$g <- renderPlot({
    
-    # Get data
-    stocks <-
-      c(input$stock1, input$stock2)
+    # filter data for selected stock
+    input_data <- data %>%
+      filter(symbol == input$stock)
     
-        # Draw plot
-    g <- data %>%
-      filter(symbol %in% stocks) %>%
-      ggplot(aes(x = date, y = Ra, color = symbol)) +
-      geom_line() +
-      facet_wrap(. ~ symbol, ncol = 1, scales = "free_y") +
-      theme_tq() +
-      labs(
-        title  = "",
-        x      = "",
-        y      = "",
-        color  = ""
-      
-      ) +
-      scale_color_tq()
+    # generate forecast
+    fit <- auto.arima(input_data$close)
     
-    ggplotly(g) %>% layout(height = 400, width = 800)
+    forecast <- forecast(fit, h = input$periods)
+    
+    # draw plot
+    g <- plot(forecast, ylab = "Closing Price", xlab = "Period")
+    
+    g
     
   })
   

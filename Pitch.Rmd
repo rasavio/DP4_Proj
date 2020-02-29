@@ -1,0 +1,79 @@
+---
+title: "Data Products - Week 4 Project"
+author: "Ryan Savio"
+date: "March 1, 2020"
+output:
+  slidy_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(readr)
+library(tseries)
+library(forecast)
+```
+
+## Overview
+My shiny application forecasts closing prices for 'FAANG' technology stocks.
+
+The user can use the provided drop-down menu to select which stock they wish to review. As well as adjusted the number of periods to be forecast.
+
+The application can be found at https://rsavio.shinyapps.io/DP4_proj/
+
+With the source files published on to [GitHub](https://github.com/rasavio/DP4_Proj) for reference.
+
+## Data Source
+
+The data snapshot used by the web application contains stock prices from 01/01/2010 to 01/03/2020. 
+
+```{r, eval=FALSE}
+# FAANG Technology stocks
+stock_symbols <- c("FB", "AMZN", "NFLX", "GOOG", "AAPL")
+
+data <- tq_get(
+  stock_symbols,
+  get  = "stock.prices",
+  from = "2010-01-01")
+```
+
+## Forecasting
+Forecasting is generated in realtime using `ARIMA` based on user selections.
+```{r, eval=FALSE}
+serverLogic <- function(input, output) {
+  output$g <- renderPlot({
+    # filter data for selected stock
+    input_data <- data %>%
+      filter(symbol == input$stock)
+    # generate forecast
+    fit <- auto.arima(input_data$close)
+        forecast <- forecast(fit, h = input$periods)
+    # draw plot
+    g <- plot(forecast, ylab = "Closing Price", xlab = "Period")
+    g
+  })
+}
+```
+## User Instructions
+
+There are only two input variables, each with default values selected so that an example is generated upon loading the web application.
+
+Within the `server.R` file we have configured the application to filter the data snapshot based on the selected stock symbol. The ARIMA model is then re-fit based on the selection, as well as the defined number of periods.
+
+Once the model is fit a simple plot is generated to display both the actual and forecast closing stock prices.
+
+## Sample
+Here's an example based on the selection of Facebook ("FB") for 250 periods.
+
+```{r}
+data <- read_rds("data.rds") %>%
+  filter(symbol == "FB")
+
+fit <- auto.arima(data$close)
+forecast <- forecast(fit, h = 250)
+plot(forecast, ylab = "Closing Price", xlab = "Period")
+```
+
+
+
